@@ -24,6 +24,7 @@ template_dir = os.path.join(os.path.dirname(__file__), "templates")
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape = True)
 
 
+
 class handler(webapp2.RequestHandler):
     def write(self, *a, **kw):
         self.response.out.write(*a, **kw)
@@ -35,25 +36,59 @@ class handler(webapp2.RequestHandler):
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
 
-
 class MainHandler(handler):
-    def renderFront(self, title="", post="", error=""):
-        return self.render("newpost.html", title=title, post=post, error=error)
+    def get(self):
+        self.redirect("/blog")
+
+class blogPost(db.Model):
+    title = db.StringProperty(required = True)
+    body = db.TextProperty(required = True)
+    created = db.DateTimeProperty(auto_now_add = True)
+
+
+class Blog(handler):
+    def renderFront(self):
+        blogPosts = db.GqlQuery("""
+                                SELECT * FROM blogPost
+                                ORDER BY created DESC
+                                LIMIT 5
+                                """)
+
+        return self.render("front.html", blogPosts=blogPosts)
 
     def get(self):
         self.renderFront()
+
+
+class NewPost(handler):
+    def renderNewPost(self, title="", post="", error=""):
+        return self.render("newpost.html", title=title, post=post, error=error)
+
+    def get(self):
+        self.renderNewPost()
 
     def post(self):
         title = self.request.get("title")
         post = self.request.get("post")
 
         if title and post:
-            self.write("Thanks!")
+            b = blogPost(title = title, body = post)
+            b.put()
+            self.redirect("/blog")
         else:
             error = "You need a title and a post!"
-            self.renderFront(title=title, post=post, error=error)
+            self.renderNewPost(title=title, post=post, error=error)
+
+class ViewPostHandler(handler):
+    def get(self, id):
+        post = blogPost.get_by_id(int(id))
+        self.response.write(post)
+        #self.render("viewpost.html", post = post)
 
 
 app = webapp2.WSGIApplication([
-    ('/', MainHandler)
+    ('/', MainHandler),
+    ('/blog', Blog),
+    ('/new-post', NewPost),
+    webapp2.Route('/blog/<id:\d+>', ViewPostHandler)
 ], debug=True)

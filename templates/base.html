@@ -6,12 +6,26 @@
             .error {
                 color: red;
             }
+
+            .post-title {
+              text-decoration: underline;
+            }
+
+            .post-datetime {
+              color: grey;
+              font-style: italic;
+              font-size: 8pt;
+            }
         </style>
     </head>
     <body>
         <h1>
-            <a href="/">Izzy's Blog</a>
+            <a href="/blog">Izzy's Blog</a>
         </h1>
+
+        <ul>
+            <li><a href="/new-post">New Post</a></li>
+        </ul>
 
         {% block content %}
         {% endblock %}

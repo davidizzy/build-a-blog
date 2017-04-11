@@ -74,7 +74,7 @@ class NewPost(handler):
         if title and post:
             b = blogPost(title = title, body = post)
             b.put()
-            self.redirect("/blog")
+            self.redirect("/blog/" + str(b.key().id()))
         else:
             error = "You need a title and a post!"
             self.renderNewPost(title=title, post=post, error=error)
@@ -82,8 +82,14 @@ class NewPost(handler):
 class ViewPostHandler(handler):
     def get(self, id):
         post = blogPost.get_by_id(int(id))
-        self.response.write(post)
-        #self.render("viewpost.html", post = post)
+
+        if post:
+            self.response.write(post)
+        else:
+            error="Sorry, but we can't find that post."
+            self.response.write(error)
+
+        self.render("viewpost.html", post = post)
 
 
 app = webapp2.WSGIApplication([

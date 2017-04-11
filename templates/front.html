@@ -16,4 +16,17 @@
 
 {% endfor %}
 <hr />
+
+
+<nav>
+  {% if prevPage %}
+  <a href="?page={{prevPage}}">Previous Page</a>
+  {% endif %}
+  &nbsp;&nbsp; | &nbsp;&nbsp;
+  {% if nextPage %}
+  <a href="?page={{nextPage}}">Next Page</a>
+  {% endif %}
+</nav>
+
+
 {% endblock %}

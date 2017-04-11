@@ -23,7 +23,14 @@ from google.appengine.ext import db
 template_dir = os.path.join(os.path.dirname(__file__), "templates")
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape = True)
 
-
+def get_posts(limit, offset):
+    limit = str(limit)
+    offset = str(offset)
+    blogPosts = db.GqlQuery("""
+                            SELECT * FROM blogPost
+                            ORDER BY created DESC
+                            LIMIT """+ limit +""" OFFSET """+ offset)
+    return blogPosts
 
 class handler(webapp2.RequestHandler):
     def write(self, *a, **kw):
@@ -47,17 +54,32 @@ class blogPost(db.Model):
 
 
 class Blog(handler):
-    def renderFront(self):
-        blogPosts = db.GqlQuery("""
-                                SELECT * FROM blogPost
-                                ORDER BY created DESC
-                                LIMIT 5
-                                """)
-
-        return self.render("front.html", blogPosts=blogPosts)
-
     def get(self):
-        self.renderFront()
+        page = self.request.get("page")
+        limit = 5
+        prevPage = False
+        nextPage = False
+
+        if page:
+            page = int(page)
+        else:
+            page = 1
+
+        offset = 5*(page-1)
+        blogPosts = get_posts(5, offset)
+
+
+        #determines if previous page button will be present
+        if page > 1:
+            prevPage = page-1
+
+        #determines  if next page button will be present
+        #TODO need to get this working
+        nextPageContent = get_posts(5, offset+5)
+        if nextPageContent:
+            nextPage = page + 1
+
+        self.render("front.html", blogPosts=blogPosts, prevPage=prevPage, nextPage=nextPage)
 
 
 class NewPost(handler):

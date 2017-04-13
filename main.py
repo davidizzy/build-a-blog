@@ -74,9 +74,11 @@ class Blog(handler):
             prevPage = page-1
 
         #determines  if next page button will be present
-        #TODO need to get this working
         nextPageContent = get_posts(5, offset+5)
-        if nextPageContent:
+        counter = 0
+        for post in nextPageContent:
+            counter += 1
+        if counter > 0:
             nextPage = page + 1
 
         self.render("front.html", blogPosts=blogPosts, prevPage=prevPage, nextPage=nextPage)
